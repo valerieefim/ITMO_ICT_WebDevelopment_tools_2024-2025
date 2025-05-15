@@ -85,12 +85,440 @@
     
     <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
         <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#2-" class="nav-link">Задание 2. Параллельный парсинг веб-страниц с сохранением в базу данных</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#_1" class="nav-link">Логика работы</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#_2" class="nav-link">Наивная версия</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#threading" class="nav-link">Threading</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#multiprocessing" class="nav-link">Multiprocessing</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#async" class="nav-link">Async</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#_3" class="nav-link">Пояснение</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#_4" class="nav-link">Вывод</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
         </ul>
     </div>
 </div></div>
                     <div class="col-md-9" role="main">
 
-</div>
+<h1 id="2-">Задание 2. Параллельный парсинг веб-страниц с сохранением в базу данных</h1>
+<p>Напишите программу на Python для параллельного парсинга нескольких веб-страниц с сохранением данных в базу данных с использованием подходов threading, multiprocessing и async. Каждая программа должна парсить информацию с нескольких веб-сайтов, сохранять их в базу данных.</p>
+<h2 id="_1">Логика работы</h2>
+<p>В данном задании необходимо заполнить данными базу данных из лабораторной работы № 1. База данных представляет собой хранилище данных об участниках хакатонов, их командах, самих хакатонах, заданиях и решениях.</p>
+<p>К сожалению, в открытом доступе не удалось найти страницы или API для получения данных о хакатонах, поэтому было решено смоделировать следующую ситуацию.</p>
+<p>Предположим, что менеджер хакатона не разобрался с тем, как работает web-сервис, и решил собрать данные для регистрации участников с помощью гугл-формы. В ней он собрал данные, достаточные для регистрации участника в системе, добавления его в команду и регистрации на хакатон. Как итог, мы имеем таблицу с данными, которую необходимо перенести в БД.</p>
+<p>Алгоритм работы с данными:</p>
+<ol>
+<li>Подключиться к гугл-таблице и считать данные</li>
+<li>Найти команды, которых нет в базе данных, и создать их</li>
+<li>Создать участников</li>
+<li>Добавить участников в команды</li>
+</ol>
+<p>В рамках данной лабораторной работы запараллелим шаги 3 и 4 (шаг 2 оставим, как есть, в целях соблюдения целостности данных). Для записи данных воспользуемся сервером, реализованным в лабораторной работе №1 .</p>
+<h2 id="_2">Наивная версия</h2>
+<pre><code class="language-python">import time
+
+import gspread
+from google.oauth2.service_account import Credentials
+import requests
+
+
+def init_google_sheet(url, creds_path=&quot;creds.json&quot;):
+    SCOPES = [&quot;https://www.googleapis.com/auth/spreadsheets&quot;]
+    creds = Credentials.from_service_account_file(creds_path, scopes=SCOPES)
+    gc = gspread.authorize(creds)
+    sh = gc.open_by_url(url)
+    return sh
+
+
+def get_token(username=&quot;dptgo&quot;, password=&quot;iloveweb&quot;):
+    url = &quot;http://localhost:8000/token/&quot;
+    response = requests.post(url, data={&quot;username&quot;: username, &quot;password&quot;: password})
+    return response.json()[&quot;access_token&quot;]
+
+
+def get_teams(token):
+    url = &quot;http://localhost:8000/teams/&quot;
+    headers = {&quot;Authorization&quot;: f&quot;Bearer {token}&quot;}
+    response = requests.get(url, headers=headers)
+    return response.json()
+
+
+def get_participants(token):
+    url = &quot;http://localhost:8000/participants/&quot;
+    headers = {&quot;Authorization&quot;: f&quot;Bearer {token}&quot;}
+    response = requests.get(url, headers=headers)
+    return response.json()
+
+
+def create_team(token, team_name):
+    url = &quot;http://localhost:8000/teams/&quot;
+    headers = {&quot;Authorization&quot;: f&quot;Bearer {token}&quot;, &quot;Content-Type&quot;: &quot;application/json&quot;}
+    data = {&quot;name&quot;: team_name, &quot;approve_status&quot;: &quot;Gathering&quot;}
+    response = requests.post(url, json=data, headers=headers)
+    if response.status_code != 200:
+        print(&quot;Failed to create team:&quot;, response.status_code, response.json())
+    return response.json()
+
+
+def parse_participant(row):
+    return {
+        &quot;full_name&quot;: row[&quot;ФИО&quot;],
+        &quot;nickname&quot;: row[&quot;Никнейм&quot;],
+        &quot;email&quot;: row[&quot;E-mail&quot;],
+        &quot;phone&quot;: &quot;+&quot; + str(row[&quot;Номер телефона&quot;]),
+        &quot;skill&quot;: row[&quot;Отметьте ваш главный навык&quot;],
+    }
+
+
+def create_participant(token, participant):
+    url = &quot;http://localhost:8000/participants/&quot;
+    headers = {&quot;Authorization&quot;: f&quot;Bearer {token}&quot;, &quot;Content-Type&quot;: &quot;application/json&quot;}
+    data = parse_participant(participant)
+    response = requests.post(url, json=data, headers=headers)
+    if response.status_code != 200:
+        print(&quot;Failed to create participant:&quot;, response.status_code, response.json())
+    return response.json()
+
+
+def add_participant_to_team(token, team_id, participant_id):
+    url = f&quot;http://localhost:8000/teams/{team_id}/participants/&quot;
+    headers = {&quot;Authorization&quot;: f&quot;Bearer {token}&quot;}
+    params = {&quot;participant_id&quot;: participant_id}
+    response = requests.patch(url, params=params, headers=headers)
+    if response.status_code != 200:
+        print(
+            &quot;Failed adding participant to team:&quot;, response.status_code, response.json()
+        )
+    return response.json()
+
+
+if __name__ == &quot;__main__&quot;:
+    start_time = time.time()
+
+    url = &quot;https://docs.google.com/spreadsheets/d/1mQN3GROxytwL-8Y_Hi9Gxrf3XeP9Kqe7SzII6SajWSo&quot;
+    sh = init_google_sheet(url)
+    worksheet = sh.sheet1
+    data = worksheet.get_all_records()
+
+    token = get_token()
+    existing_teams = get_teams(token)
+    team_names = set(row[&quot;Команда&quot;] for row in data if row[&quot;Команда&quot;])
+    for team_name in team_names:
+        if team_name not in [team[&quot;name&quot;] for team in existing_teams]:
+            create_team(token, team_name)
+
+    teams = get_teams(token)
+    team_mapping = {team[&quot;name&quot;]: team[&quot;id&quot;] for team in teams}
+
+    for row in data:
+        create_participant(token, row)
+
+    participants = get_participants(token)
+    participants_mapping = {
+        participant[&quot;nickname&quot;]: participant[&quot;id&quot;] for participant in participants
+    }
+    for row in data:
+        if row[&quot;Команда&quot;]:
+            add_participant_to_team(
+                token,
+                team_mapping[row[&quot;Команда&quot;]],
+                participants_mapping[row[&quot;Никнейм&quot;]],
+            )
+
+    print(f&quot;Общее время выполнения: {time.time() - start_time} секунд.&quot;)
+</code></pre>
+<h2 id="threading">Threading</h2>
+<pre><code class="language-python">from lab_2_S2.mark_time import mark_time
+from parser_naive import *
+from threading import Thread
+
+
+def create_participants(token, data, n_threads=5):
+    def task(batch):
+        for row in batch:
+            create_participant(token, row)
+
+    def chunks(lst, n):
+        for i in range(0, len(lst), n):
+            yield lst[i : i + n]
+
+    batch_size = len(data) // n_threads + (len(data) % n_threads &gt; 0)
+    batches = list(chunks(data, batch_size))
+
+    threads = []
+    for batch in batches:
+        thread = Thread(target=task, args=(batch,))
+        thread.start()
+        threads.append(thread)
+
+    for thread in threads:
+        thread.join()
+
+
+def add_participants_to_teams(
+    token, data, team_mapping, participants_mapping, n_threads=5
+):
+    def task(batch):
+        for row in batch:
+            team_id = team_mapping[row[&quot;Команда&quot;]]
+            participant_id = participants_mapping[row[&quot;Никнейм&quot;]]
+            add_participant_to_team(token, team_id, participant_id)
+
+    def chunks(lst, n):
+        for i in range(0, len(lst), n):
+            yield lst[i : i + n]
+
+    batch_size = len(data) // n_threads + (len(data) % n_threads &gt; 0)
+    batches = list(chunks(data, batch_size))
+
+    threads = []
+    for batch in batches:
+        thread = Thread(target=task, args=(batch,))
+        thread.start()
+        threads.append(thread)
+
+    for thread in threads:
+        thread.join()
+
+
+@mark_time
+def parse_and_save():
+    url = &quot;https://docs.google.com/spreadsheets/d/1mQN3GROxytwL-8Y_Hi9Gxrf3XeP9Kqe7SzII6SajWSo&quot;
+    sh = init_google_sheet(url)
+    worksheet = sh.sheet1
+    data = worksheet.get_all_records()
+
+    token = get_token()
+    existing_teams = get_teams(token)
+    team_names = set(row[&quot;Команда&quot;] for row in data if row[&quot;Команда&quot;])
+    for team_name in team_names:
+        if team_name not in [team[&quot;name&quot;] for team in existing_teams]:
+            create_team(token, team_name)
+
+    teams = get_teams(token)
+    team_mapping = {team[&quot;name&quot;]: team[&quot;id&quot;] for team in teams}
+
+    create_participants(token, data)
+
+    participants = get_participants(token)
+    participants_mapping = {
+        participant[&quot;nickname&quot;]: participant[&quot;id&quot;] for participant in participants
+    }
+
+    add_participants_to_teams(token, data, team_mapping, participants_mapping)
+
+
+if __name__ == &quot;__main__&quot;:
+    parse_and_save()
+</code></pre>
+<h2 id="multiprocessing">Multiprocessing</h2>
+<pre><code class="language-python">from lab_2_S2.mark_time import mark_time
+from parser_naive import *
+import multiprocessing
+
+
+def process_participants(token, batch):
+    for row in batch:
+        create_participant(token, row)
+
+
+def create_participants(token, data, n_processes=5):
+    def chunks(lst, n):
+        for i in range(0, len(lst), n):
+            yield lst[i : i + n]
+
+    batch_size = len(data) // n_processes + (len(data) % n_processes &gt; 0)
+    batches = list(chunks(data, batch_size))
+
+    with multiprocessing.Pool(n_processes) as pool:
+        pool.starmap(process_participants, [(token, batch) for batch in batches])
+
+
+def process_teams(token, batch, team_mapping, participants_mapping):
+    for row in batch:
+        team_id = team_mapping[row[&quot;Команда&quot;]]
+        participant_id = participants_mapping[row[&quot;Никнейм&quot;]]
+        add_participant_to_team(token, team_id, participant_id)
+
+
+def add_participants_to_teams(
+    token, data, team_mapping, participants_mapping, n_processes=5
+):
+    def chunks(lst, n):
+        for i in range(0, len(lst), n):
+            yield lst[i : i + n]
+
+    batch_size = len(data) // n_processes + (len(data) % n_processes &gt; 0)
+    batches = list(chunks(data, batch_size))
+
+    with multiprocessing.Pool(n_processes) as pool:
+        pool.starmap(
+            process_teams,
+            [(token, batch, team_mapping, participants_mapping) for batch in batches],
+        )
+
+
+@mark_time
+def parse_and_save():
+    url = &quot;https://docs.google.com/spreadsheets/d/1mQN3GROxytwL-8Y_Hi9Gxrf3XeP9Kqe7SzII6SajWSo&quot;
+    sh = init_google_sheet(url)
+    worksheet = sh.sheet1
+    data = worksheet.get_all_records()
+
+    token = get_token()
+    existing_teams = get_teams(token)
+    team_names = set(row[&quot;Команда&quot;] for row in data if row[&quot;Команда&quot;])
+    for team_name in team_names:
+        if team_name not in [team[&quot;name&quot;] for team in existing_teams]:
+            create_team(token, team_name)
+
+    teams = get_teams(token)
+    team_mapping = {team[&quot;name&quot;]: team[&quot;id&quot;] for team in teams}
+
+    create_participants(token, data)
+
+    participants = get_participants(token)
+    participants_mapping = {
+        participant[&quot;nickname&quot;]: participant[&quot;id&quot;] for participant in participants
+    }
+
+    add_participants_to_teams(token, data, team_mapping, participants_mapping)
+
+
+if __name__ == &quot;__main__&quot;:
+    parse_and_save()
+</code></pre>
+<h2 id="async">Async</h2>
+<pre><code class="language-python">import aiohttp
+import asyncio
+from parser_naive import *
+
+
+async def create_participant(session, token, participant):
+    url = &quot;http://localhost:8000/participants/&quot;
+    headers = {&quot;Authorization&quot;: f&quot;Bearer {token}&quot;, &quot;Content-Type&quot;: &quot;application/json&quot;}
+    data = parse_participant(participant)
+    async with session.post(url, json=data, headers=headers) as response:
+        return await response.json(), response.status
+
+
+async def create_participants(token, data):
+    async with aiohttp.ClientSession() as session:
+        tasks = [
+            create_participant(session, token, participant) for participant in data
+        ]
+        await asyncio.gather(*tasks)
+
+
+async def add_participant_to_team(session, token, team_id, participant_id):
+    url = f&quot;http://localhost:8000/teams/{team_id}/participants/&quot;
+    headers = {&quot;Authorization&quot;: f&quot;Bearer {token}&quot;}
+    params = {&quot;participant_id&quot;: participant_id}
+    async with session.patch(url, params=params, headers=headers) as response:
+        return await response.json(), response.status
+
+
+async def add_participants_to_teams(token, data, team_mapping, participants_mapping):
+    async with aiohttp.ClientSession() as session:
+        tasks = [
+            add_participant_to_team(
+                session,
+                token,
+                team_mapping[row[&quot;Команда&quot;]],
+                participants_mapping[row[&quot;Никнейм&quot;]],
+            )
+            for row in data
+        ]
+        await asyncio.gather(*tasks)
+
+
+async def parse_and_save():
+    url = &quot;https://docs.google.com/spreadsheets/d/1mQN3GROxytwL-8Y_Hi9Gxrf3XeP9Kqe7SzII6SajWSo&quot;
+    sh = init_google_sheet(url)
+    worksheet = sh.sheet1
+    data = worksheet.get_all_records()
+
+    token = get_token()
+    existing_teams = get_teams(token)
+    team_names = set(row[&quot;Команда&quot;] for row in data if row[&quot;Команда&quot;])
+    for team_name in team_names:
+        if team_name not in [team[&quot;name&quot;] for team in existing_teams]:
+            create_team(token, team_name)
+
+    teams = get_teams(token)
+    team_mapping = {team[&quot;name&quot;]: team[&quot;id&quot;] for team in teams}
+
+    await create_participants(token, data)
+
+    participants = get_participants(token)
+    participants_mapping = {
+        participant[&quot;nickname&quot;]: participant[&quot;id&quot;] for participant in participants
+    }
+
+    await add_participants_to_teams(token, data, team_mapping, participants_mapping)
+
+
+if __name__ == &quot;__main__&quot;:
+    start_time = time.time()
+    asyncio.run(parse_and_save())
+    print(f&quot;Общее время выполнения: {time.time() - start_time} секунд.&quot;)
+</code></pre>
+<h2 id="_3">Пояснение</h2>
+<p>В «наивном» парсере реализованы основные функции, которые обеспечивают подключение к гугл-таблицам (библиотеки gspread, google.oauth2) и подключение к нашему серверу. Их впоследствии будем импортировать в асинхронные парсеры.</p>
+<p>В реализации подхода с использованием threading данные разбиваются на батчи в соответствии с желаемым числом потоков, эти батчи обрабатываются в потоках.</p>
+<p>Аналогично реализован подход с использованием multiprocessing, но вместо потоков используются процессы.</p>
+<p>В асинхронной реализации используется библиотека aiohttp для асинхронных запросов к серверу. В отличие от предыдущих примеров, данные не разбиваются на батчи — все запросы отправляются практически одновременно.</p>
+<table>
+<thead>
+<tr>
+<th>Подход</th>
+<th>Время выполнения (сек)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Наивный</td>
+<td>4.5526</td>
+</tr>
+<tr>
+<td>Threading</td>
+<td>3.6526</td>
+</tr>
+<tr>
+<td>Multiprocessing</td>
+<td>6.5502</td>
+</tr>
+<tr>
+<td>Async</td>
+<td>3.8700</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_4">Вывод</h2>
+<p>Лучше всего себя показали подходы с использованием threading и async, они хорошо подходят для I/O-bound задач. Multiprocessing оказался наименее эффективным, поскольку он больше подходит для CPU-bound задач, много времени требуется на создание процессов.</p></div>
             </div>
         </div>
 

@@ -85,12 +85,236 @@
     
     <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
         <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#1-threading-multiprocessing-async-python" class="nav-link">Задание 1. Различия между threading, multiprocessing и async в Python</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#_1" class="nav-link">Задание</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#_2" class="nav-link">Реализация</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#_3" class="nav-link">Наивная версия</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#threading" class="nav-link">Threading</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#multiprocessing" class="nav-link">Multiprocessing</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#async" class="nav-link">Async</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#_4" class="nav-link">Пояснение</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#_5" class="nav-link">Сравнение подходов по времени выполнения</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#_6" class="nav-link">Более подробный вывод</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
         </ul>
     </div>
 </div></div>
                     <div class="col-md-9" role="main">
 
-</div>
+<h1 id="1-threading-multiprocessing-async-python">Задание 1. Различия между threading, multiprocessing и async в Python</h1>
+<h2 id="_1">Задание</h2>
+<p>Напишите три различных программы на Python, использующие каждый из подходов: threading, multiprocessing и async. Каждая программа должна решать считать сумму всех чисел от 1 до 1000000. Разделите вычисления на несколько параллельных задач для ускорения выполнения.</p>
+<h2 id="_2">Реализация</h2>
+<p>Для удобства замера времени в главной директории лабораторной работы lab_2_S_2 была написана функция-декоратор:</p>
+<pre><code class="language-python">import time
+
+
+def mark_time(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        print(f&quot;Общее время выполнения: {end_time - start_time} секунд.&quot;)
+        return result
+
+    return wrapper
+</code></pre>
+<p>Ниже представлены реализации сумматоров с использованием threading, multiprocessing и async:</p>
+<h2 id="_3">Наивная версия</h2>
+<pre><code class="language-python">from lab_2_S2.mark_time import mark_time
+
+
+@mark_time
+def calculate_sum(n=1000000):
+    s = 0
+    for i in range(1, n + 1):
+        s += i
+    return s
+
+
+if __name__ == &quot;__main__&quot;:
+    print(calculate_sum())
+</code></pre>
+<h2 id="threading">Threading</h2>
+<pre><code class="language-python">import threading
+from lab_2_S2.mark_time import mark_time
+
+
+def calculate_part_sum(start, end, results, idx):
+    s = 0
+    for i in range(start, end + 1):
+        s += i
+    results[idx] = s
+
+
+@mark_time
+def calculate_sum(n=1000000, n_threads=4):
+    results = [0] * n_threads
+    threads = []
+    step = n // n_threads
+
+    for i in range(n_threads):
+        start = i * step + 1
+        if i == n_threads - 1:
+            end = n
+        else:
+            end = (i + 1) * step
+
+        # Создаётся и запускается поток, в котором вычисляется частичная сумма
+        thread = threading.Thread(
+            target=calculate_part_sum, args=(start, end, results, i)
+        )
+        threads.append(thread)
+        thread.start()
+
+    # Дожидаемся завершения всех потоков
+    # Нужно для того, чтобы результаты всех частичных сумм были записаны в results
+    for thread in threads:
+        thread.join()
+
+    return sum(results)
+
+
+if __name__ == &quot;__main__&quot;:
+    print(calculate_sum())
+</code></pre>
+<h2 id="multiprocessing">Multiprocessing</h2>
+<pre><code class="language-python">import multiprocessing
+from lab_2_S2.mark_time import mark_time
+
+
+def calculate_part_sum(start, end):
+    s = 0
+    for i in range(start, end + 1):
+        s += i
+    return s
+
+
+@mark_time
+def calculate_sum(n=1000000, n_processes=4):
+    with multiprocessing.Pool(n_processes) as pool:
+        step = n // n_processes
+        ranges = [
+            (i * step + 1, n)
+            if i == n_processes - 1
+            else (i * step + 1, (i + 1) * step)
+            for i in range(n_processes)
+        ]
+        # Задачи распределяются между процессами и считаются частичные суммы
+        results = pool.starmap(calculate_part_sum, ranges)
+    return sum(results)
+
+
+if __name__ == &quot;__main__&quot;:
+    print(calculate_sum())
+</code></pre>
+<h2 id="async">Async</h2>
+<pre><code class="language-python">import asyncio
+from lab_2_S2.mark_time import mark_time
+
+
+async def calculate_part_sum(start, end):
+    s = 0
+    for i in range(start, end + 1):
+        s += i
+    return s
+
+
+@mark_time
+async def calculate_sum(n=1000000, n_steps=4):
+    step = n // n_steps
+    ranges = [
+        (i * step + 1, n) if i == n_steps - 1 else (i * step + 1, (i + 1) * step)
+        for i in range(n_steps)
+    ]
+    # Создаём задачи для каждого диапазона и собираем результаты
+    results = await asyncio.gather(*[calculate_part_sum(*range_) for range_ in ranges])
+    return sum(results)
+
+
+if __name__ == &quot;__main__&quot;:
+    print(asyncio.run(calculate_sum()))
+</code></pre>
+<h2 id="_4">Пояснение</h2>
+<p>Реализация вычисления суммы намеренно представлена в виде цикла, а не эффективных инструментов Python, таких как sum или range. Это позволяет оценить разницу во времени выполнения между различными подходами.</p>
+<p>Во всех трёх реализациях используется функция calculate_part_sum, которая считает частичную сумму чисел в заданном диапазоне. Она необходима для распределения вычислений между потоками, процессами или задачами.</p>
+<p>В реализации с использованием threading создаются потоки, каждый из которых вычисляет частичную сумму. После завершения имеем список с вычисленными частичными суммами. В конце суммируем все частичные суммы.</p>
+<p>В реализации с использованием multiprocessing создаются процессы, каждый из которых вычисляет частичную сумму. Диапазон от 1 до 1000000 разбивается на n равных частей, где n — количество процессов. С помощью starmap распределяем выполнение задач между процессами. В конце суммируем все частичные суммы.</p>
+<p>В реализации с использованием async создаются задачи для каждого диапазона чисел. После завершения всех задач собираем результаты и суммируем их.</p>
+<h2 id="_5">Сравнение подходов по времени выполнения</h2>
+<table>
+<thead>
+<tr>
+<th>Подход</th>
+<th>Время выполнения (сек)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Наивный</td>
+<td>0.0655</td>
+</tr>
+<tr>
+<td>Threading</td>
+<td>0.0552</td>
+</tr>
+<tr>
+<td>Multiprocessing</td>
+<td>0.8154</td>
+</tr>
+<tr>
+<td>Async</td>
+<td>0.1473</td>
+</tr>
+</tbody>
+</table>
+<p>Самым эффективным подходом оказался threading, вероятно, из-за минимальных расходов на создание потоков. По аналогичной причине multiprocessing оказался наименее эффективным.</p>
+<p>В целом, в вычислительных задачах неоправданно использовать распараллеливание (хотя фактически его не происходит в некоторых случаях), а лучше пользоваться «наивными» методами, которые работают гораздо лучше с помощью встроенных эффективных инструментов Python.</p>
+<h2 id="_6">Более подробный вывод</h2>
+<p>Почему threading и async оказались наиболее эффективными</p>
+<p>– Природа задачи — I/O-bound</p>
+<p>I/O-bound задачи — это задачи, в которых основное время уходит не на вычисления, а на ожидание операций ввода-вывода (например, чтение из файлов, сетевые запросы, ожидание ответов от БД и т.п.).</p>
+<p>Такие задачи хорошо масштабируются не за счёт мощности процессора, а за счёт параллельного ожидания завершения операций. Это позволяет эффективно использовать время простоя.</p>
+<p>threading: работает через многопоточность, где каждый поток может выполнять свой I/O независимо. Хотя Python имеет Global Interpreter Lock (GIL), при выполнении I/O он может временно освобождаться, позволяя другим потокам работать. Это даёт ускорение по сравнению с наивным последовательным кодом.
+async: работает через событийный цикл. Внутри asyncio задачи не выполняются параллельно, но могут приостанавливать своё выполнение, освобождая управление другим задачам. Это особенно эффективно при большом количестве мелких операций, где каждый шаг включает ожидание.</p>
+<p>Результат: меньшее время выполнения (0.05–0.14 сек), так как I/O не блокирует весь процесс, и можно обрабатывать несколько задач одновременно.</p>
+<p>Почему multiprocessing оказался менее эффективным</p>
+<p>– Подход основан на многопроцессности</p>
+<p>multiprocessing создаёт отдельные процессы, каждый из которых имеет собственную память и интерпретатор Python. Это позволяет обойти GIL и действительно выполнять код параллельно.</p>
+<p>Но: для I/O-bound задач это избыточно, поскольку I/O не нагружает CPU, и реальные вычислительные преимущества здесь теряются.
+Создание и управление процессами требует значительных ресурсов: передача данных между процессами (через очереди, пайпы и т.п.), копирование данных (если они не в shared memory) — всё это даёт накладные расходы.
+При малых объёмах работы время на запуск процессов может превышать выигрыш от параллелизма.
+Результат: большее время выполнения (0.81 сек) на фоне простых I/O операций — из-за высоких накладных расходов на управление процессами.</p></div>
             </div>
         </div>
 
