@@ -1,0 +1,77 @@
+services:
+  db:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: database
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  main_service:
+    build:
+      context: ./Lr1/
+    container_name: main_service
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - parser_service
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/database
+      PARSER_URL: http://parser_service:8001
+      SYNC_DB_URL: postgresql+psycopg2://postgres:postgres@db:5432/database
+
+  parser_service:
+    build:
+      context: ./Lr3/
+    container_name: parser_service
+    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+    ports:
+      - "8001:8001"
+    depends_on:
+      - redis
+      - db
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/database
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+
+
+  celery_worker:
+    build:
+      context: ./Lr3/
+    container_name: celery_worker
+    command: celery -A celery_worker worker --loglevel=info
+    depends_on:
+      db:
+        condition: service_healthy
+      parser_service:
+        condition: service_started
+      redis:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/database
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      PYTHONPATH: /app
+    restart: on-failure
+
+volumes:
+  db_data:
