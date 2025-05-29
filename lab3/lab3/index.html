@@ -105,6 +105,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-bs-level="2"><a href="#_3" class="nav-link">Схема взаимодействия компонентов</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-bs-level="2"><a href="#1-docker" class="nav-link">Задание 1: Упаковка сервисов в Docker</a>
               <ul class="nav flex-column">
               </ul>
@@ -121,11 +125,7 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-bs-level="2"><a href="#_3" class="nav-link">Принцип работы</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-bs-level="2"><a href="#_4" class="nav-link">Схема взаимодействия компонентов</a>
+            <li class="nav-item" data-bs-level="2"><a href="#_4" class="nav-link">Принцип работы</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -162,6 +162,15 @@
 <p>Celery для обработки асинхронных задач</p>
 </li>
 </ul>
+<h2 id="_3">Схема взаимодействия компонентов</h2>
+<ol>
+<li><strong>time_manager_app</strong> - основное приложение с бизнес-логикой</li>
+<li><strong>parser_service</strong> - микросервис для парсинга данных </li>
+<li><strong>redis</strong> - хранилище для очередей задач</li>
+<li><strong>celery_worker</strong> - обработчик асинхронных задач</li>
+<li><strong>db</strong> - база данных PostgreSQL для хранения обработанных данных</li>
+</ol>
+<p>Все компоненты взаимодействуют между собой в рамках Docker-сети, что обеспечивает изоляцию и независимость сервисов.</p>
 <h2 id="1-docker">Задание 1: Упаковка сервисов в Docker</h2>
 <h3 id="parser-service-dockerfile">Parser Service - Dockerfile</h3>
 <pre><code class="language-dockerfile">FROM python:3.13-slim
@@ -387,7 +396,7 @@ def get_task_status(task_id: str):
 </code></pre>
 <p><img alt="async" src="async.png" />
 <img alt="async_res" src="async_res.png" /></p>
-<h2 id="_3">Принцип работы</h2>
+<h2 id="_4">Принцип работы</h2>
 <p><strong>Синхронный вызов парсера</strong>:</p>
 <ul>
 <li>
@@ -424,15 +433,6 @@ def get_task_status(task_id: str):
 <p>При готовности результата, возвращается также и сам результат</p>
 </li>
 </ul>
-<h2 id="_4">Схема взаимодействия компонентов</h2>
-<ol>
-<li><strong>time_manager_app</strong> - основное приложение с бизнес-логикой</li>
-<li><strong>parser_service</strong> - микросервис для парсинга данных </li>
-<li><strong>redis</strong> - хранилище для очередей задач</li>
-<li><strong>celery_worker</strong> - обработчик асинхронных задач</li>
-<li><strong>db</strong> - база данных PostgreSQL для хранения обработанных данных</li>
-</ol>
-<p>Все компоненты взаимодействуют между собой в рамках Docker-сети, что обеспечивает изоляцию и независимость сервисов.</p>
 <h2 id="_5">Выводы</h2>
 <p>В результате лабораторной работы я научилась:</p>
 <ul>
