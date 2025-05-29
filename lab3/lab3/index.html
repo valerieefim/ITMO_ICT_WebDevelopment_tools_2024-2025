@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../../img/favicon.ico">
+        <title>Задание - Веб-программирование. Семестр 2</title>
+        <link href="../../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../../css/fontawesome.min.css" rel="stylesheet">
+        <link href="../../css/brands.min.css" rel="stylesheet">
+        <link href="../../css/solid.min.css" rel="stylesheet">
+        <link href="../../css/v4-font-face.min.css" rel="stylesheet">
+        <link href="../../css/base.css" rel="stylesheet">
+        <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
+        <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="../..">Веб-программирование. Семестр 2</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="nav-item">
+                                <a href="../.." class="nav-link">Главная</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Л/Р 2</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../../lab2/task1/" class="dropdown-item">Задание 1</a>
+</li>
+                                    
+<li>
+    <a href="../../lab2/task2/" class="dropdown-item">Задание 2</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle active" aria-current="page" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Л/Р 3</a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="./" class="dropdown-item active" aria-current="page">Задание</a>
+</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ms-md-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../../lab2/task2/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" class="nav-link disabled">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-bs-toggle="collapse" data-bs-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-body-tertiary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-bs-level="1"><a href="#fastapi-celery-docker" class="nav-link">Интеграция парсера данных с FastAPI и использование очередей Celery в Docker</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-bs-level="2"><a href="#_1" class="nav-link">Цель</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#_2" class="nav-link">Архитектура</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#1-docker" class="nav-link">Задание 1: Упаковка сервисов в Docker</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#2-api" class="nav-link">Задание 2: Реализация API парсера</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#3-celery" class="nav-link">Задание 3: Настройка Celery для асинхронного выполнения задач</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#4" class="nav-link">Задание 4: Интеграция парсера с основным приложением</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#_3" class="nav-link">Принцип работы</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-bs-level="2"><a href="#_4" class="nav-link">Схема взаимодействия компонентов</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="fastapi-celery-docker">Интеграция парсера данных с FastAPI и использование очередей Celery в Docker</h1>
+<h2 id="_1">Цель</h2>
+<p>Научиться упаковывать FastAPI приложения в Docker, создавать связь между основным приложением и сервисом парсинга данных, а также реализовать асинхронное выполнение задач с использованием очередей Celery и Redis.</p>
+<h2 id="_2">Архитектура</h2>
+<p>Проект состоит из следующих компонентов:</p>
+<ul>
+<li>
+<p>Основное FastAPI приложение (finance_app)</p>
+</li>
+<li>
+<p>Сервис парсера (parser_service)</p>
+</li>
+<li>
+<p>База данных PostgreSQL</p>
+</li>
+<li>
+<p>Redis для хранения очередей задач</p>
+</li>
+<li>
+<p>Celery для обработки асинхронных задач</p>
+</li>
+</ul>
+<h2 id="1-docker">Задание 1: Упаковка сервисов в Docker</h2>
+<h3 id="parser-service-dockerfile">Parser Service - Dockerfile</h3>
+<pre><code class="language-dockerfile">FROM python:3.13-slim
+
+RUN apt-get update &amp;&amp; apt-get install -y \
+    gcc build-essential libpq-dev \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY . /app
+
+RUN pip install --no-cache-dir -r /app/req.txt
+
+EXPOSE 8001
+
+CMD [&quot;uvicorn&quot;, &quot;api:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8001&quot;]
+</code></pre>
+<h3 id="time-manager-app-dockerfile">Time Manager App - Dockerfile</h3>
+<pre><code class="language-dockerfile">FROM python:3.11-slim
+
+RUN apt-get update &amp;&amp; apt-get install -y \
+    gcc build-essential libpq-dev \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY . /app
+
+RUN pip install --no-cache-dir -r /app/req.txt
+
+EXPOSE 8000
+
+CMD [&quot;uvicorn&quot;, &quot;main:app&quot;, &quot;--host&quot;, &quot;0.0.0.0&quot;, &quot;--port&quot;, &quot;8000&quot;]
+</code></pre>
+<h3 id="docker-compose">Docker Compose для оркестрации сервисов</h3>
+<pre><code class="language-yaml">services:
+  db:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: database
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - &quot;5432:5432&quot;
+    healthcheck:
+      test: [&quot;CMD&quot;, &quot;pg_isready&quot;, &quot;-U&quot;, &quot;postgres&quot;]
+      interval: 2s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - &quot;6379:6379&quot;
+
+  main_service:
+    build:
+      context: ./Lr1/
+    container_name: main_service
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - &quot;8000:8000&quot;
+    depends_on:
+      - db
+      - parser_service
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/database
+      PARSER_URL: http://parser_service:8001
+      SYNC_DB_URL: postgresql+psycopg2://postgres:postgres@db:5432/database
+
+  parser_service:
+    build:
+      context: ./Lr3/
+    container_name: parser_service
+    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+    ports:
+      - &quot;8001:8001&quot;
+    depends_on:
+      - redis
+      - db
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/database
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+
+
+  celery_worker:
+    build:
+      context: ./Lr3/
+    container_name: celery_worker
+    command: celery -A celery_worker worker --loglevel=info
+    depends_on:
+      db:
+        condition: service_healthy
+      parser_service:
+        condition: service_started
+      redis:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/database
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      PYTHONPATH: /app
+    restart: on-failure
+
+volumes:
+  db_data:
+</code></pre>
+<h2 id="2-api">Задание 2: Реализация API парсера</h2>
+<h3 id="parser-service-api">Parser Service - API</h3>
+<pre><code class="language-python">from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from celery_worker import parse, celery_app
+from task_2 import parser_async
+
+app = FastAPI(title=&quot;Parser&quot;)
+
+class ParseRequest(BaseModel):
+    url: str
+
+@app.post(&quot;/parse&quot;)
+async def parse_pages(request: ParseRequest):
+    try:
+        await parser_async.main(request.url)
+        return {&quot;message&quot;: f&quot;Pages are parsed from {request.url}&quot;}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post(&quot;/parse/trigger&quot;)
+async def trigger_parse(request: ParseRequest):
+    task = parse.delay(request.url)
+    return {&quot;message&quot;: &quot;Parsing started&quot;, &quot;task_id&quot;: task.id}
+
+@app.get(&quot;/parse/status/{task_id}&quot;)
+async def get_task_status(task_id: str):
+    result = celery_app.AsyncResult(task_id)
+    return {
+        &quot;task_id&quot;: task_id,
+        &quot;status&quot;: result.status,
+        &quot;successful&quot;: result.successful() if result.ready() else None
+    }
+</code></pre>
+<p><img alt="Parse" src="parse.png" /></p>
+<h2 id="3-celery">Задание 3: Настройка Celery для асинхронного выполнения задач</h2>
+<h3 id="celery-worker-celery_workerpy">Celery Worker (celery_worker.py)</h3>
+<pre><code class="language-python">from celery import Celery
+import asyncio
+from task_2.parser_async import main
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+celery_app = Celery(
+    &quot;parser&quot;,
+    broker=os.getenv(&quot;CELERY_BROKER_URL&quot;, &quot;redis://redis:6379/0&quot;),
+    backend=os.getenv(&quot;CELERY_RESULT_BACKEND&quot;, &quot;redis://redis:6379/0&quot;),
+)
+
+@celery_app.task(name=&quot;parse_from_url&quot;)
+def parse(url: str):
+    asyncio.run(main(url))
+</code></pre>
+<p><img alt="trigger" src="trigger.png" />
+<img alt="trigger_res" src="trigger_res.png" /></p>
+<h2 id="4">Задание 4: Интеграция парсера с основным приложением</h2>
+<h3 id="router">Router для вызова парсера из основного приложения</h3>
+<pre><code class="language-python">from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+import httpx
+from celery import Celery
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+router = APIRouter(prefix=&quot;/parse&quot;, tags=[&quot;Parser&quot;])
+
+PARSER_URL = os.getenv(&quot;PARSER_URL&quot;)
+
+celery_app = Celery(
+    &quot;parser_celery&quot;,
+    broker=os.getenv(&quot;CELERY_BROKER_URL&quot;, &quot;redis://redis:6379/0&quot;),
+    backend=os.getenv(&quot;CELERY_RESULT_BACKEND&quot;, &quot;redis://redis:6379/0&quot;),
+)
+
+
+class ParseRequest(BaseModel):
+    url: str
+
+
+@router.post(&quot;/&quot;)
+async def call_parser(request: ParseRequest):
+    async with httpx.AsyncClient(timeout=15) as client:
+        try:
+            response = await client.post(f&quot;{PARSER_URL}/parse&quot;, json=request.dict())
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPStatusError as e:
+            raise HTTPException(status_code=response.status_code, detail=response.text)
+
+
+@router.post(&quot;/async-parse&quot;)
+def enqueue_parse_task(request: ParseRequest):
+    task = celery_app.send_task(&quot;parse_from_url&quot;, args=[request.url])
+    return {&quot;task_id&quot;: task.id, &quot;status&quot;: task.status, &quot;message&quot;: &quot;Parsing started&quot;}
+
+
+@router.get(&quot;/status/{task_id}&quot;)
+def get_task_status(task_id: str):
+    result = celery_app.AsyncResult(task_id)
+    return {
+        &quot;task_id&quot;: task_id,
+        &quot;status&quot;: result.status,
+        &quot;successful&quot;: result.successful() if result.ready() else None,
+    }
+</code></pre>
+<p><img alt="async" src="async.png" />
+<img alt="async_res" src="async_res.png" /></p>
+<h2 id="_3">Принцип работы</h2>
+<p><strong>Синхронный вызов парсера</strong>:</p>
+<ul>
+<li>
+<p>Запрос приходит на эндпоинт <code>/parse</code> основного приложения</p>
+</li>
+<li>
+<p>Основное приложение перенаправляет запрос в сервис парсера</p>
+</li>
+<li>
+<p>Парсер выполняет обработку и возвращает результат</p>
+</li>
+</ul>
+<p><strong>Асинхронный вызов парсера через очередь</strong>:</p>
+<ul>
+<li>
+<p>Запрос приходит на эндпоинт <code>/parse/async-parse</code> основного приложения</p>
+</li>
+<li>
+<p>Основное приложение создает задачу в очереди Celery</p>
+</li>
+<li>
+<p>Задача обрабатывается Celery worker'ом асинхронно</p>
+</li>
+<li>
+<p>Клиент может проверить статус выполнения задачи по её ID</p>
+</li>
+</ul>
+<p><strong>Проверка статуса задачи</strong>:</p>
+<ul>
+<li>
+<p>Запрос на эндпоинт <code>/parse/status/{task_id}</code> возвращает текущий статус задачи</p>
+</li>
+<li>
+<p>При готовности результата, возвращается также и сам результат</p>
+</li>
+</ul>
+<h2 id="_4">Схема взаимодействия компонентов</h2>
+<ol>
+<li><strong>time_manager_app</strong> - основное приложение с бизнес-логикой</li>
+<li><strong>parser_service</strong> - микросервис для парсинга данных </li>
+<li><strong>redis</strong> - хранилище для очередей задач</li>
+<li><strong>celery_worker</strong> - обработчик асинхронных задач</li>
+<li><strong>db</strong> - база данных PostgreSQL для хранения обработанных данных</li>
+</ol>
+<p>Все компоненты взаимодействуют между собой в рамках Docker-сети, что обеспечивает изоляцию и независимость сервисов.</p></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script src="../../js/bootstrap.bundle.min.js"></script>
+        <script>
+            var base_url = "../..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../../js/base.js"></script>
+        <script src="../../search/main.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
